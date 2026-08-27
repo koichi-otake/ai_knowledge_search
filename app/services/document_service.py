@@ -81,11 +81,17 @@ def upload_document(
             chunk_overlap=100,
         )
 
+        embeddings = [
+            [0.0] * 1536
+            for _ in chunks
+        ]
+
         # 5. chunksテーブルへ登録
         chunk_repository.create_chunks(
             db=db,
             document_id=document_id,
             chunks=chunks,
+            embeddings=embeddings,
         )
 
         # 6. 全部成功したら確定

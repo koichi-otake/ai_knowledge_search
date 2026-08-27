@@ -11,6 +11,8 @@ from sqlalchemy.orm import relationship
 
 from app.core.database import Base
 
+from pgvector.sqlalchemy import Vector
+
 
 class ChunkORM(Base):
     __tablename__ = "chunks"
@@ -39,7 +41,13 @@ class ChunkORM(Base):
         server_default=func.now(),
     )
 
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(1536),
+        nullable=True,
+    )
+
     document = relationship(
         "DocumentORM",
         back_populates="chunks",
     )
+
