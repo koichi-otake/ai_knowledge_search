@@ -1,22 +1,25 @@
-from openai import OpenAI
-
 from app.core.config import settings
-
-
-client = OpenAI(
-    api_key=settings.openai_api_key,
+from app.services.embedding_provider import (
+    get_embedding_provider,
 )
 
 
-def create_embedding(text: str) -> list[float]:
-    try:
-        response = client.embeddings.create(
-            model="text-embedding-3-small",
-            input=text,
-        )
-        return response.data[0].embedding
+provider = get_embedding_provider()
 
-    except APIError as e:
-        raise RuntimeError(
-            f"Embeddingの生成に失敗しました: {e}"
-        ) from e
+
+def create_embedding(
+    text: str,
+) -> list[float]:
+
+    vector = provider.create_embedding(
+        text=text,
+    )
+
+    if len(vector) != settings.embedding_dimensions:
+        raise ValueError(
+            "Embeddingの次元数が一致しません。"
+            f" expected={settings.embedding_dimensions}"
+            f" actual={len(vector)}"
+        )
+
+    return vector

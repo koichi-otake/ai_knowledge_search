@@ -4,6 +4,8 @@ from app.models.chunk import ChunkORM
 
 from sqlalchemy import select
 
+from sqlalchemy import text
+
 def create_chunk(
     db: Session,
     document_id: int,
@@ -81,3 +83,59 @@ def search_similar_chunks(
         (chunk, float(distance_value))
         for chunk, distance_value in rows
     ]
+
+
+def search_by_embedding(
+    db,
+    embedding: list[float],
+    limit: int = 5,
+):
+    sql = text("""
+        SELECT
+            id,
+            document_id,
+            chunk_index,
+            content,
+            created_at,
+            embedding <=> CAST(:embedding AS vector) AS distance
+        FROM chunks
+        ORDER BY embedding <=> CAST(:embedding AS vector)
+        LIMIT :limit
+    """)
+
+    result = db.execute(
+        sql,
+        {
+            "embedding": embedding,
+            "limit": limit,
+        },
+    )
+
+    return result.fetchall()
+
+
+
+
+def update_embedding(
+    db,
+    chunk_id: int,
+    embedding: list[float],
+):
+    chunk = db.get(
+        ChunkORM,
+        chunk_id,
+    )
+
+    if chunk is None:
+        return
+
+    chunk.embedding = embedding
+
+    db.commit()
+
+
+
+def get_all_chunks(db):
+    return db.scalars(
+        select(ChunkORM)
+    ).all()

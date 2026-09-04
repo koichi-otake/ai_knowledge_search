@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     openai_api_key: str
 
     rag_similarity_threshold: float = 0.75
+    embedding_provider: str = "mock"
+    embedding_dimensions: int = 384
 
     model_config = SettingsConfigDict(
         env_file=".env",

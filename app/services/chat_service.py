@@ -47,6 +47,13 @@ def ask(
         for chunk in chunks
     ]
 
+    if not chunks:
+        return {
+            "question": question,
+            "answer": "該当する社内ナレッジが見つかりませんでした。",
+            "sources": [],
+        }
+
     prompt = build_rag_prompt(
         question=question,
         contexts=contexts,
