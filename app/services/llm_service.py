@@ -1,7 +1,19 @@
+from openai import OpenAI
+
+from app.core.config import settings
+
+
+client = OpenAI(
+    api_key=settings.openai_api_key,
+)
+
+
 def generate_answer(
     prompt: str,
 ) -> str:
-    return (
-        "【モック回答】"
-        "検索された社内文書を使った回答生成処理は正常に呼び出されました。"
+    response = client.responses.create(
+        model="gpt-5.6-luna",
+        input=prompt,
     )
+
+    return response.output_text

@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.repositories.chunk_repository import search_by_embedding
 from app.services.embedding_service import create_embedding
 
@@ -17,11 +18,19 @@ def search(
         limit=limit,
     )
 
-    return [
-        {
-            "chunk": row,
-            "distance": row.distance,
-        }
-        for row in rows
-    ]
+    results = []
 
+    for row in rows:
+        distance = float(row.distance)
+        similarity = 1 - distance
+
+        if similarity >= settings.rag_similarity_threshold:
+            results.append(
+                {
+                    "chunk": row,
+                    "distance": distance,
+                    "similarity": similarity,
+                }
+            )
+
+    return results

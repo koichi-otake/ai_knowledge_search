@@ -47,13 +47,6 @@ def ask(
         for chunk in chunks
     ]
 
-    if not chunks:
-        return {
-            "question": question,
-            "answer": "該当する社内ナレッジが見つかりませんでした。",
-            "sources": [],
-        }
-
     prompt = build_rag_prompt(
         question=question,
         contexts=contexts,
@@ -68,10 +61,11 @@ def ask(
         "answer": answer,
         "sources": [
             {
-                "document_id": chunk.document_id,
-                "chunk_id": chunk.id,
-                "chunk_index": chunk.chunk_index,
+                "document_id": result["chunk"].document_id,
+                "chunk_id": result["chunk"].id,
+                "chunk_index": result["chunk"].chunk_index,
+                "similarity": result["similarity"],
             }
-            for chunk in chunks
+            for result in results
         ],
     }

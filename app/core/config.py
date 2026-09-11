@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     database_url: str
     openai_api_key: str
 
-    rag_similarity_threshold: float = 0.75
+    rag_similarity_threshold: float = 0.45
     embedding_provider: str = "mock"
     embedding_dimensions: int = 384
 

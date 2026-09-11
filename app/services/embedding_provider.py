@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 from openai import OpenAI
-from sentence_transformers import SentenceTransformer
 
 from app.core.config import settings
 
@@ -55,6 +54,8 @@ class LocalEmbeddingProvider(
 ):
 
     def __init__(self):
+        from sentence_transformers import SentenceTransformer
+
         self.model = SentenceTransformer(
             "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
         )
