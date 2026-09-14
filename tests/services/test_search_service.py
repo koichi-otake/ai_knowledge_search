@@ -3,10 +3,13 @@ import app.services.search_service as search_service
 
 
 def test_search_filters_by_similarity(monkeypatch):
-    class FakeRow:
-        def __init__(self, distance):
-            self.distance = distance
 
+    class FakeRow:
+        def __init__(self, distance, id=1, document_id=1):
+            self.distance = distance
+            self.id = id
+            self.document_id = document_id
+        
     fake_rows = [
         FakeRow(0.2),   # similarity = 0.8 → 採用
         FakeRow(0.549999),  # similarity ≒ 0.450001 → 採用

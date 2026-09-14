@@ -9,6 +9,7 @@ class SourceResponse(BaseModel):
     document_id: int
     chunk_id: int
     chunk_index: int
+    similarity: float
 
 
 class ChatResponse(BaseModel):

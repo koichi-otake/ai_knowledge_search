@@ -47,9 +47,21 @@ def ask(
         for chunk in chunks
     ]
 
+    logger.warning(
+        "RAGコンテキスト: question=%s, chunks=%d",
+        question,
+        len(contexts),
+    )
+
     prompt = build_rag_prompt(
         question=question,
         contexts=contexts,
+    )
+
+    logger.warning(
+        "RAGプロンプト生成: question=%s, prompt_length=%d",
+        question,
+        len(prompt),
     )
 
     answer = generate_answer(
