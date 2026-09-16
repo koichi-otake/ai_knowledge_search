@@ -74,6 +74,7 @@ def ask(
         "sources": [
             {
                 "document_id": result["chunk"].document_id,
+                "document_name": result["chunk"].filename,
                 "chunk_id": result["chunk"].id,
                 "chunk_index": result["chunk"].chunk_index,
                 "similarity": result["similarity"],

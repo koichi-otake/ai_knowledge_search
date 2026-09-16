@@ -92,14 +92,17 @@ def search_by_embedding(
 ):
     sql = text("""
         SELECT
-            id,
-            document_id,
-            chunk_index,
-            content,
-            created_at,
-            embedding <=> CAST(:embedding AS vector) AS distance
+            chunks.id,
+            chunks.document_id,
+            documents.filename,
+            chunks.chunk_index,
+            chunks.content,
+            chunks.created_at,
+            chunks.embedding <=> CAST(:embedding AS vector) AS distance
         FROM chunks
-        ORDER BY embedding <=> CAST(:embedding AS vector)
+        JOIN documents
+            ON chunks.document_id = documents.id
+        ORDER BY chunks.embedding <=> CAST(:embedding AS vector)
         LIMIT :limit
     """)
 
@@ -112,9 +115,6 @@ def search_by_embedding(
     )
 
     return result.fetchall()
-
-
-
 
 def update_embedding(
     db,

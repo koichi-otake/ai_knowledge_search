@@ -7,6 +7,7 @@ class ChatRequest(BaseModel):
 
 class SourceResponse(BaseModel):
     document_id: int
+    document_name: str
     chunk_id: int
     chunk_index: int
     similarity: float

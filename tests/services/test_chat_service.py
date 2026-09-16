@@ -69,6 +69,7 @@ def test_no_document_returns_no_answer(monkeypatch):
 def test_related_document_calls_llm(monkeypatch):
     class FakeChunk:
         document_id = 1
+        filename = "就業規則.pdf"
         id = 10
         chunk_index = 0
         content = "有給休暇は入社6か月後に10日付与されます。"
@@ -118,6 +119,7 @@ def test_related_document_calls_llm(monkeypatch):
     assert result["sources"] == [
         {
             "document_id": 1,
+            "document_name": "就業規則.pdf",
             "chunk_id": 10,
             "chunk_index": 0,
             "similarity": 0.8,
