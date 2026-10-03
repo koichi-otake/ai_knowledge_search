@@ -6,9 +6,9 @@ from sqlalchemy.orm import Session
 
 from app.repositories import chunk_repository
 from app.repositories import document_repository
-from app.services.chunk_service import split_text
-from app.services.pdf_service import extract_text
-
+from app.services.embedding_service import create_embedding
+from app.services.chunk_service import split_text, split_resume_words
+from app.services.pdf_service import extract_text, extract_words
 
 STORAGE_DIR = Path("storage/documents")
 
@@ -74,19 +74,22 @@ def upload_document(
                 detail="PDFから文字を抽出できませんでした。",
             )
 
-        # 4. チャンクへ分割
-        chunks = split_text(
-            text=text,
-            chunk_size=500,
-            chunk_overlap=100,
+        # 4. PDFの単語情報を取得
+        words = extract_words(
+            str(file_path)
+        )
+
+        # 5. 履歴書を意味単位に分割
+        chunks = split_resume_words(
+            words
         )
 
         embeddings = [
-            [0.0] * 1536
-            for _ in chunks
+            create_embedding(chunk) 
+            for chunk in chunks
         ]
 
-        # 5. chunksテーブルへ登録
+        # 6. chunksテーブルへ登録
         chunk_repository.create_chunks(
             db=db,
             document_id=document_id,
@@ -94,10 +97,10 @@ def upload_document(
             embeddings=embeddings,
         )
 
-        # 6. 全部成功したら確定
+        # 7. 全部成功したら確定
         db.commit()
 
-        # 7. DBの最新状態を取得
+        # 8. DBの最新状態を取得
         db.refresh(document)
 
         return document

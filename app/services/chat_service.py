@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.services.llm_service import generate_answer
 from app.services.prompt_service import build_rag_prompt
 from app.services.search_service import search
+from app.services.search_query_service import generate_search_query
 
 
 logger = logging.getLogger(__name__)
@@ -19,9 +20,18 @@ def ask(
     db: Session,
     question: str,
 ) -> dict:
+
+    search_query = generate_search_query(question)
+
+    logger.warning(
+        "RAG検索クエリ: question=%s, search_query=%s",
+        question,
+        search_query,
+    )
+
     results = search(
         db=db,
-        question=question,
+        question=search_query,
         limit=5,
     )
 
