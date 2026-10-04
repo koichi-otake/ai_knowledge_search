@@ -8,7 +8,11 @@ from app.repositories import chunk_repository
 from app.repositories import document_repository
 from app.services.embedding_service import create_embedding
 from app.services.chunk_service import split_text, split_resume_words
-from app.services.pdf_service import extract_text, extract_words
+from app.services.pdf_service import (
+    extract_text,
+    extract_words,
+    is_resume_document,
+)
 
 STORAGE_DIR = Path("storage/documents")
 
@@ -75,15 +79,17 @@ def upload_document(
             )
 
         # 4. PDFの単語情報を取得
-        words = extract_words(
-            str(file_path)
-        )
+        if is_resume_document(text):
+            words = extract_words(str(file_path))
+            chunks = split_resume_words(words)
+        else:
+            chunks = split_text(
+                text=text,
+                chunk_size=500,
+                chunk_overlap=100,
+            )
 
         # 5. 履歴書を意味単位に分割
-        chunks = split_resume_words(
-            words
-        )
-
         embeddings = [
             create_embedding(chunk) 
             for chunk in chunks

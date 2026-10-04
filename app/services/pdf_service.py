@@ -1,3 +1,5 @@
+import re
+
 import fitz
 
 
@@ -48,3 +50,24 @@ def extract_words(
     document.close()
 
     return words
+
+def normalize_text(text: str) -> str:
+    return re.sub(r"\s+", "", text)
+
+
+def is_resume_document(text: str) -> bool:
+    normalized_text = normalize_text(text)
+
+    markers = [
+        "履歴書",
+        "学歴・職歴",
+        "免許・資格",
+        "本人希望記入欄",
+    ]
+
+    matched_count = sum(
+        marker in normalized_text
+        for marker in markers
+    )
+
+    return matched_count >= 2
