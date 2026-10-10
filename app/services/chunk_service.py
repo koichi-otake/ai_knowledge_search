@@ -1,3 +1,5 @@
+import re
+
 def split_text(
     text: str,
     chunk_size: int = 500,
@@ -15,23 +17,160 @@ def split_text(
             "chunk_overlapはchunk_sizeより小さくしてください。"
         )
 
+    paragraphs = [
+        paragraph.strip()
+        for paragraph in text.split("\n")
+        if paragraph.strip()
+    ]
+
     chunks = []
+    current_chunk = ""
 
-    step = chunk_size - chunk_overlap
+    for paragraph in paragraphs:
 
-    for start in range(
-        0,
-        len(text),
-        step,
-    ):
-        end = start + chunk_size
+        # 段落が短い場合は、そのまま現在のチャンクに追加
+        if len(paragraph) <= chunk_size:
 
-        chunk = text[start:end]
+            if not current_chunk:
+                current_chunk = paragraph
+                continue
 
-        if not chunk:
-            break
+            candidate = (
+                current_chunk
+                + "\n"
+                + paragraph
+            )
 
-        chunks.append(chunk)
+            if len(candidate) <= chunk_size:
+                current_chunk = candidate
+            else:
+                chunks.append(current_chunk)
+
+                overlap = current_chunk[-chunk_overlap:] if chunk_overlap > 0 else ""
+                candidate = overlap + "\n" + paragraph if overlap else paragraph
+
+                if len(candidate) <= chunk_size:
+                    current_chunk = candidate
+                else:
+                    current_chunk = paragraph
+
+            continue
+
+        # 長い段落は「。」を優先して分割
+        sentences = re.split(
+            r"(?<=。)",
+            paragraph,
+        )
+
+        for sentence in sentences:
+
+            sentence = sentence.strip()
+
+            if not sentence:
+                continue
+
+            # 1文がchunk_size以内なら通常処理
+            if len(sentence) <= chunk_size:
+
+                if not current_chunk:
+                    current_chunk = sentence
+                    continue
+
+                candidate = (
+                    current_chunk
+                    + "\n"
+                    + sentence
+                )
+
+                if len(candidate) <= chunk_size:
+                    current_chunk = candidate
+                else:
+                    chunks.append(current_chunk)
+                    current_chunk = sentence
+
+                continue
+
+            # 1文が長すぎる場合は「、」を優先
+            clauses = re.split(
+                r"(?<=、)",
+                sentence,
+            )
+
+            for clause in clauses:
+
+                clause = clause.strip()
+
+                if not clause:
+                    continue
+
+                # 「、」単位でもchunk_size以内なら追加
+                if len(clause) <= chunk_size:
+
+                    if not current_chunk:
+                        current_chunk = clause
+                        continue
+
+                    candidate = (
+                        current_chunk
+                        + clause
+                    )
+
+                    if len(candidate) <= chunk_size:
+                        current_chunk = candidate
+                    else:
+                        chunks.append(current_chunk)
+                        current_chunk = clause
+
+                    continue
+
+                # 「、」単位でも長い場合だけ文字数で分割
+                if current_chunk:
+                    chunks.append(current_chunk)
+                    current_chunk = ""
+
+                step = chunk_size - chunk_overlap
+
+                for start in range(
+                    0,
+                    len(clause),
+                    step,
+                ):
+                    end = start + chunk_size
+                    chunk = clause[start:end]
+
+                    if chunk:
+                        chunks.append(chunk)
+
+    if current_chunk:
+        chunks.append(current_chunk)
+
+
+
+    # 最後のチャンクが小さすぎる場合は、
+    # 重複部分を除いて直前のチャンクと結合する
+    if len(chunks) >= 2:
+        last_chunk = chunks[-1]
+        previous_chunk = chunks[-2]
+
+        minimum_chunk_size = chunk_size // 4
+
+        overlap = (
+            previous_chunk[-chunk_overlap:]
+            if chunk_overlap > 0
+            else ""
+        )
+
+        if overlap and last_chunk.startswith(overlap + "\n"):
+            new_content = last_chunk[len(overlap) + 1:]
+            combined = previous_chunk + new_content
+        else:
+            new_content = last_chunk
+            combined = previous_chunk + "\n" + last_chunk
+
+        if len(new_content) < minimum_chunk_size:
+            if len(combined) <= chunk_size:
+                chunks[-2] = combined
+                chunks.pop()
 
     return chunks
 
