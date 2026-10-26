@@ -125,3 +125,53 @@ def test_related_document_calls_llm(monkeypatch):
             "similarity": 0.8,
         }
     ]
+
+def test_only_top_three_results_are_used(monkeypatch):
+    class FakeChunk:
+        def __init__(self, chunk_id):
+            self.document_id = 1
+            self.filename = "test.pdf"
+            self.id = chunk_id
+            self.chunk_index = chunk_id
+            self.content = f"文書内容{chunk_id}"
+
+    fake_results = [
+        {
+            "chunk": FakeChunk(i),
+            "distance": 0.1 * i,
+            "similarity": 1 - 0.1 * i,
+        }
+        for i in range(1, 6)
+    ]
+
+    captured = {}
+
+    def fake_search(db, question, limit):
+        return fake_results
+
+    def fake_build_rag_prompt(question, contexts):
+        captured["contexts"] = contexts
+        return "テスト用プロンプト"
+
+    def fake_generate_answer(prompt):
+        return "テスト回答"
+
+    monkeypatch.setattr(chat_service, "search", fake_search)
+    monkeypatch.setattr(
+        chat_service, "generate_search_query", lambda question: question
+    )
+    monkeypatch.setattr(
+        chat_service, "build_rag_prompt", fake_build_rag_prompt
+    )
+    monkeypatch.setattr(
+        chat_service, "generate_answer", fake_generate_answer
+    )
+
+    result = chat_service.ask(db=None, question="テスト質問")
+
+    assert captured["contexts"] == [
+        "文書内容1",
+        "文書内容2",
+        "文書内容3",
+    ]
+    assert len(result["sources"]) == 3

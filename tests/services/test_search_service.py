@@ -9,14 +9,14 @@ def test_search_filters_by_similarity(monkeypatch):
             self.distance = distance
             self.id = id
             self.document_id = document_id
-        
+
     fake_rows = [
         FakeRow(0.2),   # similarity = 0.8 → 採用
         FakeRow(0.549999),  # similarity ≒ 0.450001 → 採用
         FakeRow(0.7),   # similarity = 0.3 → 除外
     ]
 
-    def fake_create_embedding(question):
+    def fake_create_embedding(question, is_query=False):
         return [0.1, 0.2]
 
     def fake_search_by_embedding(db, embedding, limit):

@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     rag_similarity_threshold: float = 0.40
     embedding_provider: str = "local"
     embedding_dimensions: int = 384
+    local_embedding_model: str = "intfloat/multilingual-e5-small"
 
     model_config = SettingsConfigDict(
         env_file=".env",

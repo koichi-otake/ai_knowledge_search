@@ -11,6 +11,8 @@ class EmbeddingProvider(ABC):
     def create_embedding(
         self,
         text: str,
+        *,
+        is_query: bool = False,
     ) -> list[float]:
         pass
 
@@ -27,6 +29,8 @@ class OpenAIEmbeddingProvider(
     def create_embedding(
         self,
         text: str,
+        *,
+        is_query: bool = False,
     ) -> list[float]:
 
         response = self.client.embeddings.create(
@@ -44,10 +48,11 @@ class MockEmbeddingProvider(
     def create_embedding(
         self,
         text: str,
+        *,
+        is_query: bool = False,
     ) -> list[float]:
 
         return [0.0] * settings.embedding_dimensions
-
 
 class LocalEmbeddingProvider(
     EmbeddingProvider
@@ -56,14 +61,19 @@ class LocalEmbeddingProvider(
     def __init__(self):
         from sentence_transformers import SentenceTransformer
 
-        self.model = SentenceTransformer(
-            "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-        )
+        self.model_name = settings.local_embedding_model
+        self.model = SentenceTransformer(self.model_name)
 
     def create_embedding(
         self,
         text: str,
+        *,
+        is_query: bool = False,
     ) -> list[float]:
+
+        if "multilingual-e5" in self.model_name:
+            prefix = "query: " if is_query else "passage: "
+            text = prefix + text
 
         vector = self.model.encode(
             text,
@@ -71,6 +81,7 @@ class LocalEmbeddingProvider(
         )
 
         return vector.tolist()
+
 
 
 def get_embedding_provider() -> EmbeddingProvider:

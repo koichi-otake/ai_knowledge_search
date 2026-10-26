@@ -91,7 +91,7 @@ def upload_document(
 
         # 5. 履歴書を意味単位に分割
         embeddings = [
-            create_embedding(chunk) 
+            create_embedding(chunk, is_query=False)
             for chunk in chunks
         ]
 

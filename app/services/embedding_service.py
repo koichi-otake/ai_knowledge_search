@@ -13,12 +13,15 @@ def get_provider():
 
 def create_embedding(
     text: str,
+    *,
+    is_query: bool = False,
 ) -> list[float]:
 
     provider = get_provider()
 
     vector = provider.create_embedding(
         text=text,
+        is_query=is_query,
     )
 
     if len(vector) != settings.embedding_dimensions:

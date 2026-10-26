@@ -12,7 +12,10 @@ def search(
     question: str,
     limit: int = 5,
 ):
-    embedding = create_embedding(question)
+    embedding = create_embedding(
+        question,
+        is_query=True,
+    )
 
     rows = search_by_embedding(
         db=db,

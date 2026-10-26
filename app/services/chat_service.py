@@ -47,6 +47,8 @@ def ask(
             "sources": [],
         }
 
+    results = results[:3]
+
     chunks = [
         result["chunk"]
         for result in results
